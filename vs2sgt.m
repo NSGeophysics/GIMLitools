@@ -1,5 +1,5 @@
-function vs2sgt(infiles,source_elevs,geoph_elevs,outfile)
-  %% vs2sgt(infiles,elevations)
+function vs2sgt(infiles,source_elevs,geoph_elevs,outfile,remdat)
+  %% vs2sgt(infiles,source_elevs,geoph_elevs,outfile,remdat)
   %%
   %% Turns the list of PickWin .vs files infiles
   %% into a GIMLi readable .sgt file
@@ -18,6 +18,10 @@ function vs2sgt(infiles,source_elevs,geoph_elevs,outfile)
   %%
   %% outfile        name for outfile. Don't append the .sgt
   %%
+  %% remdat         remove data values with travel times greater
+  %%                than this value [seconds]
+  %%                (not required)
+  %%
   %%
   %% EXAMPLE:
   %%
@@ -32,8 +36,13 @@ function vs2sgt(infiles,source_elevs,geoph_elevs,outfile)
   %% set of geophones by setting geoph_elevs to the Nxlength(infiles) matrix
   %% containing the elevations for each set of geophones for each input file.
   %%                   
-  %% Last modified by plattner-at-ethz.ch, 11/15/2017
+  %% Last modified by plattner-at-ethz.ch, 11/16/2017
 
+  %% Remove is not a required input
+  if nargin<5
+    remdat=10^10;
+  end
+  
   %% First reading all the files
   x_source=nan(length(infiles),1);
   n_geoph=nan(length(infiles),1);
@@ -120,6 +129,11 @@ function vs2sgt(infiles,source_elevs,geoph_elevs,outfile)
     end   
   end
 
+  %% Now remove unwanted data values
+  data=data(data(:,3)<remdat,:);
+  
+  %% Now write outfile
+  
   fid=fopen([outfile '.sgt'],'w');
 
   fprintf(fid,'%d # shot/geophone points\n',size(pos,1));
